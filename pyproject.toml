@@ -1,6 +1,6 @@
 [project]
 name = "SmolPyGUI"
-version = "1.60"
+version = "1.61"
 description = "A little GUI system made with pygame"
 readme = "README.md"
 requires-python = ">=3.12"
