@@ -1,15 +1,61 @@
 [GITHUB REPOSITORY](https://github.com/thebroskialex/SmolPyGUI)
 
-SmolPyGUI is a little personal project that I decided I would upload to PyPI. 
-Below are some examples of usage.
+# SmolPyGUI
 
-A Simple Hello World
-```python
-from SmolPyGUI import initialize, Button, MainLoop
+SmolPyGUI is a lightweight, minimalistic GUI framework built on top of **Pygame**.  
+It provides simple, fast, and intuitive tools for creating graphical interfaces in Python projects without the complexity of full-featured GUI frameworks.
 
-initialize((500,500)) #makes a 500x500 window
+---
 
-Button(300,300,100,100,"#ff0000",lambda: print("Hello World!")) #makes a 100x100 red button at 300,300 that prints "Hello World!"
+## Installation
 
-MainLoop() #starts the program
+You can install SmolPyGUI directly from PyPI:
+
+```bash
+pip install smolpygui
 ```
+
+
+## Examples
+See example scripts [here](https://github.com/thebroskialex/SmolPyGUI/blob/main/examples)
+
+
+
+## Features
+
+- Simple syntax and minimal boilerplate
+
+- Built on pygame, ensuring full compatibility with game and graphics projects
+
+- Supports buttons, text boxes, and color customization
+
+- Easy integration into existing Pygame loops
+
+- Lightweight and dependency-free (beyond pygame)
+
+
+
+## Requirements
+
+- Python 3.12 or higher
+
+- pygame 2.0+
+
+
+
+## License
+
+This project is licensed under the MIT License.
+See [LICENSE](https://github.com/thebroskialex/SmolPyGUI/blob/main/LICENSE) for details.
+
+
+
+## Author
+
+Smol (AKA. thebroskialex)
+Project link: https://github.com/thebroskialex/SmolPyGUI
+
+PyPI: https://pypi.org/project/SmolPyGUI/
+
+
+
