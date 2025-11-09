@@ -1,3 +1,5 @@
+[GITHUB REPOSITORY](https://github.com/thebroskialex/SmolPyGUI)
+
 SmolPyGUI is a little personal project that I decided I would upload to PyPI. 
 Below are some examples of usage.
 

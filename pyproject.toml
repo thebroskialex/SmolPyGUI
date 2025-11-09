@@ -1,13 +1,13 @@
 [project]
 name = "SmolPyGUI"
-version = "1.51"
+version = "1.60"
 description = "A little GUI system made with pygame"
 readme = "README.md"
 requires-python = ">=3.12"
 authors = [
   {name = "Smol", email = "kingalexander471@gmail.com"}
 ]
-dependencies = ["pygame"]
+dependencies = ["pygame>=2.6.1"]
 license = {text = "MIT"}
 
 [build-system]

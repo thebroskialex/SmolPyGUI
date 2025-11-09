@@ -1,7 +1,7 @@
 """
 SmolPyGUI
 
-Version 1.5
+Version 1.6
 
 Made with Pygame, many thanks to the Pygame team!
 """
@@ -12,12 +12,18 @@ from typing import Literal, Callable, NoReturn, Any
 from time import time, time_ns, sleep
 pygame.init()
 
+
+class NotInitializedError(Exception):
+    def __init__(self, msg):
+        super().__init__(msg)
+
 class Button():
-    def __init__(self, x:int, y:int, width:int, height:int, texture:pygame.Color|pygame.surface.Surface, onClick:Callable, onHover:Callable=None, stroke:int=0, scene:int=0):
+    def __init__(self, x:int, y:int, width:int, height:int, texture:pygame.Color|pygame.surface.Surface, onClick:Callable, onHover:Callable=None, onUnHover:Callable=None, stroke:int=0, scene:int=0):
         """
         Basic constructor for Button objects, defines a rectangular button with width, height, x and y position, texture, a click function, and optionally a stroke value and a scene assignment.
         """
         self.visible = True
+        self.active = True
         self.x=x
         self.y=y
         self.height=height
@@ -25,6 +31,8 @@ class Button():
         self.texture=texture
         self.onClick=onClick
         self.onHover=onHover
+        self.onUnHover = onUnHover
+        self.hovered = False
         self.stroke = stroke
         self.scene=scene
         events.buttons.append(self)
@@ -54,7 +62,7 @@ class Scene():
 
     def remove(self) -> int|bool:
         """
-        Basic removal function, removes the object from execution order\n
+        Basic removal function, removes the object from execution order
         Returns False if an error occured, return True otherwise
         """
         try:
@@ -63,22 +71,25 @@ class Scene():
         else: return True
 
 class Sound():
-    def __init__(self, sndPath:str, alias):
+    def __init__(self, sndPath:str, alias:str|Literal["music"]):
         self.snd = globals.audioPlayer.Sound(sndPath)
         if(alias):
             self.name = alias
             audio.sounds.update({alias:self})
 
 class KeypressEvent():
-    def __init__(self, keycode, onKeyDown:Callable, scene:int|str=0):
+    def __init__(self, keycode, onKeyDown:Callable=None, onKeyHeld:Callable=None, onKeyUp:Callable=None, scene:int|str=0):
         self.key = keycode
-        self.method = onKeyDown
+        self.onDown = onKeyDown
+        self.onHeld = onKeyHeld
+        self.onUp = onKeyUp
         self.scene=scene
+        self.active=True
         events.keys.append(self)
 
     def remove(self):
         """
-        Basic removal function, removes the object from execution order\n
+        Basic removal function, removes the object from execution order
         Returns False if an error occured, return True otherwise
         """
         try:
@@ -87,7 +98,7 @@ class KeypressEvent():
         else: return True
 
 class MouseEvent():
-    def __init__(self, mode:Literal["move","rightDown","rightUp","leftDown","leftUp","midDown","midUp","scroll"],onEvent:Callable,active:bool=True):
+    def __init__(self, mode:Literal["move","rightDown","rightUp","leftDown","leftUp","midDown","midUp","scrollUp","scrollDown"],onEvent:Callable,active:bool=True):
         self.onEvent = onEvent
         self.active = active
         events.mouse[mode].append(self)
@@ -106,7 +117,7 @@ class DrawRect():
 
     def remove(self):
         """
-        Basic removal function, removes the object from execution order\n
+        Basic removal function, removes the object from execution order
         Returns False if an error occured, return True otherwise
         """
         try:
@@ -128,7 +139,7 @@ class Text():
 
     def remove(self):
         """
-        Basic removal function, removes the object from execution order\n
+        Basic removal function, removes the object from execution order
         Returns False if an error occured, return True otherwise
         """
         try:
@@ -137,7 +148,8 @@ class Text():
         else: return True
 
 class TextBox():
-    def __init__(self, x:int, y:int, width:int, size:int, bg="#ffffff", bgActive="#9999ff",outline="#444444", textColor="#000000", onUpdate:Callable[[str],Any]=lambda x: None, onReturn:Callable[[str],Any]=lambda x: None, onClick:Callable=lambda: None, onHover:Callable=None, scene:int|str=0):
+    def __init__(self, x:int, y:int, width:int, size:int, bg="#ffffff", bgActive="#9999ff",outline="#444444", textColor="#000000", onUpdate:Callable[[str],Any]=lambda x: None, onReturn:Callable[[str],Any]=lambda x: None, onClick:Callable=lambda: None, onHover:Callable=None, onUnHover:Callable=None, scene:int|str=0):
+        """Basic constructor for a TextBox object, the onUpdate and onReturn callback methods are supplied with the current TextBox text content when called."""
         self.x = x
         self.y = y
         self.charWid = size*0.6
@@ -150,11 +162,15 @@ class TextBox():
         self.bgActive = bgActive
         self.outline = outline
         self.textColor = textColor
+        self.active = True
         self.onUpdate = onUpdate
         self.onInput = onReturn
         self.onClick = onClick
         self.onHover = onHover
-        self.button = Button(self.x, self.y, self.width, self.height, self.bg, lambda box=self:box.inputStart(), scene=scene)
+        self.onUnHover = onUnHover
+        self.hovered = False
+        self.scene = scene
+        self.button = Button(self.x, self.y, self.width, self.height, self.bg, lambda box=self:box.inputStart() if box.active else None, scene=scene)
         self.outBox = DrawRect(self.x, self.y, self.width, self.height, self.outline, 4, scene=scene)
         self.text = Text(self.x+5,self.y,self.value,self.size,self.textColor, scene=scene)
         self.indic = DrawRect(self.x+10, self.y+5, 2, self.height-10, self.bg, 0, scene=scene)
@@ -188,7 +204,7 @@ class TextBox():
 
     def remove(self):
         """
-        Basic removal function, removes the object from execution order\n
+        Basic removal function, removes the object from execution order
         Returns False if an error occured, return True otherwise
         """
         try:
@@ -270,7 +286,7 @@ class TextDisplay():
     
     def remove(self):
         """
-        Basic removal function, removes the object from execution order\n
+        Basic removal function, removes the object from execution order
         Returns False if an error occured, return True otherwise
         """
         try:
@@ -341,7 +357,9 @@ class events:
         "rightUp":[],
         "rightDown":[],
         "midUp":[],
-        "midDown":[]
+        "midDown":[],
+        "scrollUp":[],
+        "scrollDown":[]
     }
 
     @staticmethod
@@ -356,53 +374,78 @@ class events:
         eventType = event.type
         mouse = pygame.mouse.get_pos()
         if(eventType == pygame.MOUSEBUTTONDOWN):
-            if(event.button == 1):
+            if(event.button == pygame.BUTTON_LEFT):
                 events.clickEvents()
                 for leftDown in events.mouse['leftDown']:
-                    leftDown.onEvent(mouse)
-            elif(event.button == 2):
+                    if(leftDown.active):
+                        leftDown.onEvent(mouse)
+            elif(event.button == pygame.BUTTON_MIDDLE):
                 for midDown in events.mouse['midDown']:
-                    midDown.onEvent(mouse)
-            elif(event.button == 3):
+                    if(midDown.active):
+                        midDown.onEvent(mouse)
+            elif(event.button == pygame.BUTTON_RIGHT):
                 for rightDown in events.mouse['rightDown']:
-                    rightDown.onEvent(mouse)
-            elif(event.button == 4):
+                    if(rightDown.active):
+                        rightDown.onEvent(mouse)
+            elif(event.button == pygame.BUTTON_WHEELUP):
                 for scrollUp in events.mouse['scrollUp']:
-                    scrollUp.onEvent()
-            elif(event.button == 5):
+                    if(scrollUp.active):
+                        scrollUp.onEvent()
+            elif(event.button == pygame.BUTTON_WHEELDOWN):
                 for scrollDown in events.mouse['scrollDown']:
-                    scrollDown.onEvent
+                    if(scrollDown.active):
+                        scrollDown.onEvent()
         elif(eventType == pygame.MOUSEBUTTONUP):
             if(event.button == 1):
                 for leftUp in events.mouse['leftUp']:
-                    leftUp.onEvent()
+                    if(leftUp.active):
+                        leftUp.onEvent()
             elif(event.button == 2):
                 for midUp in events.mouse['midUp']:
-                    midUp.onEvent()
+                    if(midUp.active):
+                        midUp.onEvent()
             elif(event.button == 3):
                 for rightUp in events.mouse['rightUp']:
-                    rightUp.onEvent()
+                    if(rightUp.active):
+                        rightUp.onEvent()
         elif(eventType == pygame.MOUSEMOTION):
             for mouseMove in events.mouse['move']:
-                mouseMove.onEvent(mouse)
+                    if(mouseMove.active):
+                        mouseMove.onEvent(mouse)
 
     @staticmethod
     def hoverEvents():
         mouse = pygame.mouse.get_pos()
         for button in events.hovers:
-            if (button.x <= mouse[0] <= button.x+button.width and button.y <= mouse[1] <= button.y+button.height) and globals.scene.name == button.scene:
+            if not button.hovered and (button.x <= mouse[0] <= button.x+button.width and button.y <= mouse[1] <= button.y+button.height) and globals.scene.name == button.scene and button.active:
                 button.onHover()
+                button.hovered = True
+            elif button.hovered and not (button.x <= mouse[0] <= button.x+button.width and button.y <= mouse[1] <= button.y+button.height):
+                button.hovered = False
+                if(not button.onUnHover == None):
+                    button.onUnHover()
 
     @staticmethod
-    def keyEvents():
+    def keyHoldEvents():
         keyspressed = pygame.key.get_pressed()
         for key in events.keys:
-            if(keyspressed[key.key] and globals.scene.name == key.scene):
-                key.method()
+            if(keyspressed[key.key] and globals.scene.name == key.scene and key.active and not key.onHeld == None):
+                key.onHeld()
+
+    @staticmethod
+    def keyUpDownEvents(event:pygame.event.Event):
+        if(event.type == pygame.KEYDOWN):
+            for key in events.keys:
+                if(event.key == key.key and globals.scene.name == key.scene and key.active and not key.onDown == None):
+                    key.onDown()
+        elif(event.type == pygame.KEYUP):
+            for key in events.keys:
+                if(event.key == key.key and globals.scene.name == key.scene and key.active and not key.onUp == None):
+                    key.onUp()
 
     @staticmethod
     def processTickEvents():
-        events.keyEvents()
+        events.keyHoldEvents()
         events.hoverEvents()
 
 class draw:
@@ -434,7 +477,7 @@ class draw:
 
 def initialize(size:tuple[int,int]=(600,600), framerate:int=60, screenFlags:int=0, runtimeFuncs:list[Callable]=[]):
     """
-    This function initializes the full 
+    This function initializes the program and screen
     """
     if(not globals.init):
         globals.framerate = framerate
@@ -444,6 +487,7 @@ def initialize(size:tuple[int,int]=(600,600), framerate:int=60, screenFlags:int=
         globals.height = size[1]
         globals.scene = Scene(0, "#ffffff")
         globals.screen = globals.scene.screen
+        globals.init = True
 
 def TICK(modes:list[Literal['all','draw','input','audio','user','object']]):
     inp = False
@@ -470,8 +514,10 @@ def TICK(modes:list[Literal['all','draw','input','audio','user','object']]):
     for e in pygame.event.get():
         if(e.type == 256):
             raise SystemExit
-        elif((e.type == pygame.MOUSEBUTTONDOWN or e.type == pygame.MOUSEBUTTONDOWN or e.type == pygame.MOUSEMOTION) and inp):
+        elif((e.type == pygame.MOUSEBUTTONDOWN or e.type == pygame.MOUSEBUTTONUP or e.type == pygame.MOUSEMOTION) and inp):
             events.mouseEvents(e)
+        elif e.type == pygame.KEYDOWN or e.type == pygame.KEYUP and inp:
+            events.keyUpDownEvents(e)
     if(inp):
         events.processTickEvents()
     if(usr):
@@ -483,9 +529,9 @@ def TICK(modes:list[Literal['all','draw','input','audio','user','object']]):
     if(drw):
         draw.drawAll()
 
-def MainLoop(framerate:int=60, **funcs:Callable):
+def MainLoop():
     """
-    The core function of your program. Functions similarly to tk.Tk().MainLoop(), but in a more pythonic way.
+    The core function of your program. Functions similarly to tk.Tk().MainLoop().
     Begins the main function loop and runs it at a steady `framerate`, supplied as the first argument into this function, while also running any extra functions (`funcs` kwargs) each tick.
 
     - framrate | `int`
@@ -494,7 +540,6 @@ def MainLoop(framerate:int=60, **funcs:Callable):
     NOTE: no further lines can be run after this function is called.
     """
     if(not globals.init):
-        globals.framerate = framerate
-        globals.runtimeFuncs = funcs
+        raise NotInitializedError("The initialize() function was not called before the MainLoop function.")
     while True:
         TICK(['all'])
