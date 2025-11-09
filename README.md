@@ -53,6 +53,7 @@ See [LICENSE](https://github.com/thebroskialex/SmolPyGUI/blob/main/LICENSE) for 
 ## Author
 
 Smol (AKA. thebroskialex)
+
 Project link: https://github.com/thebroskialex/SmolPyGUI
 
 PyPI: https://pypi.org/project/SmolPyGUI/
