@@ -1,0 +1,15 @@
+[project]
+name = "SmolPyGUI"
+version = "1.51"
+description = "A little GUI system made with pygame"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+  {name = "Smol", email = "kingalexander471@gmail.com"}
+]
+dependencies = ["pygame"]
+license = {text = "MIT"}
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
