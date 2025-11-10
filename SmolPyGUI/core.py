@@ -10,6 +10,7 @@ Made with Pygame, many thanks to the Pygame team!
 import pygame
 from typing import Literal, Callable, NoReturn, Any
 from time import time, time_ns, sleep
+from math import floor
 pygame.init()
 
 
@@ -153,7 +154,7 @@ class TextBox():
         self.x = x
         self.y = y
         self.charWid = size*0.6
-        self.width = self.charWid*width
+        self.width = width
         self.height = size*1.25
         self.size = size
         self.value = ""
@@ -224,34 +225,45 @@ class TextBoxTypeWriteState():
         self.speed = 0
 
 class TextDisplay():
-    def __init__(self, x:int, y:int, width:int, lines:int, size:int, value:str="", bg:pygame.Color|pygame.surface.Surface="#ffffff",outline:pygame.Color="#444444", textColor:pygame.Color="#000000",scene:int|str=0):
+    def __init__(self, x:int, y:int, width:int, lines:int, size:int, value:str="", bg:pygame.Color|pygame.surface.Surface="#ffffff",outline:pygame.Color="#444444", textColor:pygame.Color="#000000",align:Literal["left","center"]="left",onClick:Callable=None,scene:int|str=0):
         self.x = x
         self.y = y
         self.charWid = size*0.6
-        self.width = self.charWid*width
-        self.widthInChars = width
+        self.width = width
+        self.widthInChars = floor(width/self.charWid)
         self.charHgt = size*1.25
         self.height = size*1.25*lines
         self.lines = lines
         self.size = size
-        self.drawVal = value
+        self.drawVal = ""
+        self.align = align
         self.bg = bg
         self.outline = outline
         self.textColor = textColor
         self.scene = scene
         self.typewriteState = TextBoxTypeWriteState()
+        self.onClick = onClick
+        self.active = True
+        if(not self.onClick==None):
+            events.buttons.append(self)
         self.box = DrawRect(self.x, self.y, self.width, self.height, self.bg, scene=scene) if bg else False
         self.outBox = DrawRect(self.x, self.y, self.width, self.height, self.outline, 4, scene=scene) if outline else False
         events.tickingObjects.append(self)
         self.text = [Text(self.x+5,self.y+(self.charHgt*(i%width)),self.drawVal[width*(i%width):width+(width*(i%width))],self.size,self.textColor, scene=scene) for i in range(len(value)) if i%width < self.lines]
-    
+        self.update(value, 'reset')
+
     def resetText(self) -> NoReturn:
-        """
-        Clears the TextDisplay object
-        """
         [i.remove() for i in self.text]
         self.text = [Text(self.x+5,self.y+(self.charHgt*(i%self.widthInChars)),self.drawVal[self.widthInChars*(i%self.widthInChars):self.widthInChars+(self.widthInChars*(i%self.widthInChars))],self.size,self.textColor, scene=self.scene) for i in range(len(self.drawVal)) if i%self.widthInChars < self.lines]
-    
+        if(self.align == "center"):
+            for t in self.text:
+                wid = len(t.text)*self.charWid
+                t.x = self.x + (self.width-wid)/2
+        elif(self.align == "right"):
+            for t in self.text:
+                wid = len(t.text)*self.charWid
+                t.x = self.x + (self.width-wid)
+
     def update(self, Text:str, mode:Literal["reset","append","prepend"]="reset") -> NoReturn:
         """
         Changes the TextDisplay object's text to one of three options (based on `mode` argument):

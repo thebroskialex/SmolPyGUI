@@ -20,11 +20,9 @@ pip install smolpygui
 See example scripts [here](https://github.com/thebroskialex/SmolPyGUI/blob/main/examples)
 
 
-
 ## Screenshots
-Some screenshots of code and it's output window
-![example_button Code Screenshot](https://github.com/thebroskialex/SmolPyGUI/blob/main/examples/images/example_button_code.png?raw=true) ![example_button Screenshot](https://github.com/thebroskialex/SmolPyGUI/blob/main/examples/images/example_button_window.png?raw=true)
-
+![Example Screenshot](https://github.com/thebroskialex/SmolPyGUI/blob/main/examples/images/example1.png?raw=true)
+![Example Screenshot](https://github.com/thebroskialex/SmolPyGUI/blob/main/examples/images/example2.png?raw=true)
 
 
 ## Features
@@ -63,6 +61,3 @@ Smol (AKA. thebroskialex)
 Project link: https://github.com/thebroskialex/SmolPyGUI
 
 PyPI: https://pypi.org/project/SmolPyGUI/
-
-
-
