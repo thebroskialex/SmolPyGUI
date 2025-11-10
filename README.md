@@ -22,8 +22,8 @@ See example scripts [here](https://github.com/thebroskialex/SmolPyGUI/blob/main/
 
 
 ## Screenshots
-Some screenshots of both code and it's output (window and console)
-![example_button Screenshot](https://github.com/thebroskialex/SmolPyGUI/blob/main/examples/images/example_button_window.png?raw=true)
+Some screenshots of code and it's output window
+![example_button Code Screenshot](https://github.com/thebroskialex/SmolPyGUI/blob/main/examples/images/example_button_code.png?raw=true) ![example_button Screenshot](https://github.com/thebroskialex/SmolPyGUI/blob/main/examples/images/example_button_window.png?raw=true)
 
 
 
