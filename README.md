@@ -21,6 +21,11 @@ See example scripts [here](https://github.com/thebroskialex/SmolPyGUI/blob/main/
 
 
 
+## Screenshots
+Some screenshots of both code and it's output (window and console)
+
+
+
 ## Features
 
 - Simple syntax and minimal boilerplate
