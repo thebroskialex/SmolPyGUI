@@ -23,6 +23,7 @@ See example scripts [here](https://github.com/thebroskialex/SmolPyGUI/blob/main/
 
 ## Screenshots
 Some screenshots of both code and it's output (window and console)
+![example_button Screenshot](https://github.com/thebroskialex/SmolPyGUI/blob/main/examples/images/example_button_window.png?raw=true)
 
 
 
