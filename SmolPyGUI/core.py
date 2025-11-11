@@ -11,6 +11,7 @@ import pygame
 from typing import Literal, Callable, NoReturn, Any
 from time import time, time_ns, sleep
 from math import floor
+from importlib import resources
 pygame.init()
 
 
@@ -79,14 +80,17 @@ class Sound():
             audio.sounds.update({alias:self})
 
 class KeypressEvent():
-    def __init__(self, keycode, onKeyDown:Callable=None, onKeyHeld:Callable=None, onKeyUp:Callable=None, scene:int|str=0):
+    def __init__(self, keycode:int|Literal['all'], onKeyDown:Callable=None, onKeyHeld:Callable=None, onKeyUp:Callable=None, scene:int|str=0):
         self.key = keycode
         self.onDown = onKeyDown
         self.onHeld = onKeyHeld
         self.onUp = onKeyUp
         self.scene=scene
         self.active=True
-        events.keys.append(self)
+        if(isinstance(keycode,int)):
+            events.keys.append(self)
+        elif(keycode == "all"):
+            events.keysAll.append(self)
 
     def remove(self):
         """
@@ -94,7 +98,10 @@ class KeypressEvent():
         Returns False if an error occured, return True otherwise
         """
         try:
-            events.keys.remove(self)
+            if(self.key == 'all'):
+                events.keysAll.append(self)
+            else:
+                events.keys.remove(self)
         except (KeyError, ValueError): return False
         else: return True
 
@@ -127,8 +134,11 @@ class DrawRect():
         else: return True
 
 class Text():
-    def __init__(self, x:int, y:int, text:str, size:int=16, color:pygame.Color="#000000", scene:int|str=0):
-        self.font = pygame.font.SysFont("Courier", size, True)
+    def __init__(self, x:int, y:int, text:str, size:int=16, font:Literal['Courier','Courier Italic','Roboto','Roboto Italic']|str='courier', color:pygame.Color="#000000", scene:int|str=0):
+        if(font.lower() in ['Courier','Courier Italic','Roboto','Roboto Italic']):
+            self.font = getFont(font, size)
+        else:
+            self.font = pygame.font.Font(font, size)
         self.visible=True
         self.x=x
         self.y=y
@@ -148,14 +158,20 @@ class Text():
         except (KeyError, ValueError): return False
         else: return True
 
+class TextBoxInputState():
+    def __init__(self):
+        self.active = False
+
 class TextBox():
-    def __init__(self, x:int, y:int, width:int, size:int, bg="#ffffff", bgActive="#9999ff",outline="#444444", textColor="#000000", onUpdate:Callable[[str],Any]=lambda x: None, onReturn:Callable[[str],Any]=lambda x: None, onClick:Callable=lambda: None, onHover:Callable=None, onUnHover:Callable=None, scene:int|str=0):
+    def __init__(self, x:int, y:int, width:int, size:int, font:Literal['Courier','Courier Italic','Roboto','Roboto Italic']='courier', bg="#ffffff", bgActive="#9999ff",outline="#444444", textColor="#000000", onUpdate:Callable[[str],Any]=lambda x: None, onReturn:Callable[[str],Any]=lambda x: None, onClick:Callable=lambda: None, onHover:Callable=None, onUnHover:Callable=None, scene:int|str=0):
         """Basic constructor for a TextBox object, the onUpdate and onReturn callback methods are supplied with the current TextBox text content when called."""
         self.x = x
         self.y = y
-        self.charWid = size*0.6
+        self.fontName = font
+        self.font = getFont(font,size)
+        self.charWid = self.font.size("M")[0]
         self.width = width
-        self.height = size*1.25
+        self.height = self.font.size("M")[1]
         self.size = size
         self.value = ""
         self.drawVal = ""
@@ -173,35 +189,34 @@ class TextBox():
         self.scene = scene
         self.button = Button(self.x, self.y, self.width, self.height, self.bg, lambda box=self:box.inputStart() if box.active else None, scene=scene)
         self.outBox = DrawRect(self.x, self.y, self.width, self.height, self.outline, 4, scene=scene)
-        self.text = Text(self.x+5,self.y,self.value,self.size,self.textColor, scene=scene)
+        self.text = Text(self.x+5,self.y,self.value,self.size,self.fontName,self.textColor, scene=scene)
         self.indic = DrawRect(self.x+10, self.y+5, 2, self.height-10, self.bg, 0, scene=scene)
+        self.textboxinput = None
         if(not self.onHover == None):
             events.hovers.append(self)
 
     def inputStart(self):
         self.button.texture = self.bgActive
         self.onClick()
-        while True:
-            for e in pygame.event.get():
-                if e.type == 256:
-                    exit()
-                elif e.type == pygame.KEYDOWN:
-                    if(e.key == pygame.K_RETURN):
-                        self.onInput(self.value)
-                        self.button.texture = self.bg
-                        return
-                    elif(e.key == pygame.K_BACKSPACE):
-                        self.value = self.value[:-1]
-                    else:
-                        self.value += e.unicode
-                    if(len(self.value)*(0.7*self.size)>(self.width)):
-                        self.drawVal = self.value[-int(self.width//(self.size*0.7)):]
-                    else:
-                        self.drawVal = self.value
-                    self.text.text = self.drawVal
-                    self.indic.x = (1+len(self.drawVal))*(0.6*self.size)
-                    self.onUpdate(self.value)
-            draw.drawAll()
+        self.textboxinput = KeypressEvent('all',self.processKey)
+
+    def processKey(self,_,e):
+        if(e.key == pygame.K_RETURN):
+            self.onInput(self.value)
+            self.button.texture = self.bg
+            self.textboxinput.remove()
+            self.textboxinput = None
+        elif(e.key == pygame.K_BACKSPACE):
+            self.value = self.value[:-1]
+        else:
+            self.value += e.unicode
+        if(len(self.value)*(self.charWid)>(self.width)):
+            self.drawVal = self.value[-int(self.width//(self.charWid)):]
+        else:
+            self.drawVal = self.value
+        self.text.text = self.drawVal
+        self.indic.x = (len(self.drawVal))*(self.charWid)
+        self.onUpdate(self.value)
 
     def remove(self):
         """
@@ -216,7 +231,7 @@ class TextBox():
         except (KeyError, ValueError): return False
         else: return True
 
-class TextBoxTypeWriteState():
+class TextDisplayTypeWriteState():
     def __init__(self):
         self.active = False
         self.full_text = ''
@@ -225,14 +240,15 @@ class TextBoxTypeWriteState():
         self.speed = 0
 
 class TextDisplay():
-    def __init__(self, x:int, y:int, width:int, lines:int, size:int, value:str="", bg:pygame.Color|pygame.surface.Surface="#ffffff",outline:pygame.Color="#444444", textColor:pygame.Color="#000000",align:Literal["left","center"]="left",onClick:Callable=None,scene:int|str=0):
+    def __init__(self, x:int, y:int, width:int, lines:int, size:int, font:Literal['Courier','Courier Italic','Roboto','Roboto Italic']='courier', value:str="", bg:pygame.Color|pygame.surface.Surface="#ffffff",outline:pygame.Color="#444444", textColor:pygame.Color="#000000",align:Literal["left","center"]="left",onClick:Callable=None,scene:int|str=0):
         self.x = x
         self.y = y
-        self.charWid = size*0.6
+        self.fontName = font
+        self.charWid = self.font.size("M")[0]
         self.width = width
         self.widthInChars = floor(width/self.charWid)
         self.charHgt = size*1.25
-        self.height = size*1.25*lines
+        self.height = self.font.size("M")[1]*lines*2
         self.lines = lines
         self.size = size
         self.drawVal = ""
@@ -241,7 +257,7 @@ class TextDisplay():
         self.outline = outline
         self.textColor = textColor
         self.scene = scene
-        self.typewriteState = TextBoxTypeWriteState()
+        self.typewriteState = TextDisplayTypeWriteState()
         self.onClick = onClick
         self.active = True
         if(not self.onClick==None):
@@ -249,12 +265,33 @@ class TextDisplay():
         self.box = DrawRect(self.x, self.y, self.width, self.height, self.bg, scene=scene) if bg else False
         self.outBox = DrawRect(self.x, self.y, self.width, self.height, self.outline, 4, scene=scene) if outline else False
         events.tickingObjects.append(self)
-        self.text = [Text(self.x+5,self.y+(self.charHgt*(i%width)),self.drawVal[width*(i%width):width+(width*(i%width))],self.size,self.textColor, scene=scene) for i in range(len(value)) if i%width < self.lines]
+        self.text = []
         self.update(value, 'reset')
 
+    @staticmethod
+    def getCharsToLineEnd(wid,posS):
+        posL = posS%wid
+        posL = wid if posL==0 else posL
+        return(wid-posL)
+
     def resetText(self) -> NoReturn:
+        offs=0
+        for nC,c in enumerate(self.drawVal):
+            if(c == "\n"):
+                Val = list(self.drawVal)
+                Val.remove("\n")
+                chrs = self.getCharsToLineEnd(self.widthInChars,nC+offs)
+                Val.insert(nC+offs," "*chrs)
+                offs+=chrs-1
+                self.drawVal = "".join(Val)
         [i.remove() for i in self.text]
-        self.text = [Text(self.x+5,self.y+(self.charHgt*(i%self.widthInChars)),self.drawVal[self.widthInChars*(i%self.widthInChars):self.widthInChars+(self.widthInChars*(i%self.widthInChars))],self.size,self.textColor, scene=self.scene) for i in range(len(self.drawVal)) if i%self.widthInChars < self.lines]
+        self.text = []
+        self.text = [Text(self.x+5,self.y+(self.charHgt*(i%self.widthInChars)),self.drawVal[self.widthInChars*(i%self.widthInChars):self.widthInChars+(self.widthInChars*(i%self.widthInChars))],self.size,self.fontName,self.textColor, scene=self.scene) for i in range(self.lines) if i%self.widthInChars < self.lines]
+        #for i in range(len(self.drawVal)):
+        #    if i%self.widthInChars < self.lines:
+        #        yVal = self.y+(self.charHgt*(i%self.widthInChars))
+        #        tVal=self.drawVal[self.widthInChars*(i%self.widthInChars):self.widthInChars+(self.widthInChars*(i%self.widthInChars))]
+        #        self.text.append(Text(self.x+5,yVal,tVal,self.size,self.textColor, scene=self.scene))
         if(self.align == "center"):
             for t in self.text:
                 wid = len(t.text)*self.charWid
@@ -284,12 +321,13 @@ class TextDisplay():
         else:
             raise ValueError(f"TextDisplay.update mode argument must be \"reset\", \"append\", or \"prepend\", not {mode}")
    
-    def typeWrite(self, text:str, chars:int=2,speed:int=25):
+    def typeWrite(self, text:str, chars:int=2,speed:int=25,mode:Literal['reset','append']='reset'):
         """
         Writes text to the TextDisplay object with a fun animation!
         Writes `chars` characters per `speed` ticks.
         """
-        self.update("", 'reset')
+        if(mode == 'reset'):
+            self.update("", 'reset')
         self.typewriteState.active = True
         self.typewriteState.full_text = text
         self.typewriteState.charsPerType = chars
@@ -360,6 +398,7 @@ class scenes:
 class events:
     buttons:list[Button] = []
     keys:list[KeypressEvent] = []
+    keysAll:list[KeypressEvent] = []
     hovers:list[Button] = []
     tickingObjects:list = []
     mouse:dict[str,list[MouseEvent]] = {
@@ -447,6 +486,8 @@ class events:
     @staticmethod
     def keyUpDownEvents(event:pygame.event.Event):
         if(event.type == pygame.KEYDOWN):
+            for keyA in events.keysAll:
+                keyA.onDown(event.key,event)
             for key in events.keys:
                 if(event.key == key.key and globals.scene.name == key.scene and key.active and not key.onDown == None):
                     key.onDown()
@@ -486,6 +527,19 @@ class draw:
         draw.drawTexts()
         globals.renderer.blit(globals.screen, (0,0))
         pygame.display.flip()
+
+def getFont(name:Literal['Courier','Courier Italic','Roboto','Roboto Italic'],size:int):
+    font_map = {
+        "courier": "fonts/CourierPrime-Regular.ttf",
+        "courier italic": "fonts/CourierPrime-Italic.ttf",
+        "roboto": "fonts/RobotoMono-Regular.ttf",
+        "roboto italic": "fonts/RobotoMono-Italic.ttf"
+    }
+    filename = font_map.get(name.lower())
+    if not filename:
+        raise ValueError(f"Unknown font: {name}")
+    with resources.path("SmolPyGUI", filename) as p:
+        return pygame.font.Font(p,size)
 
 def initialize(size:tuple[int,int]=(600,600), framerate:int=60, screenFlags:int=0, runtimeFuncs:list[Callable]=[]):
     """

@@ -1,6 +1,6 @@
 [project]
 name = "SmolPyGUI"
-version = "1.62"
+version = "1.64"
 description = "A little GUI system made with pygame"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -9,6 +9,12 @@ authors = [
 ]
 dependencies = ["pygame>=2.6.1"]
 license = {text = "MIT"}
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+SmolPyGUI = ["fonts/*"]
 
 [build-system]
 requires = ["setuptools"]
