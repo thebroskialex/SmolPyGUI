@@ -42,5 +42,3 @@ Fixed errors with text wrapping.
 ## README
 
 Added example screenshots
-
----
