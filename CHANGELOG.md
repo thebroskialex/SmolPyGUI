@@ -2,7 +2,7 @@
 
 ## SmolPyGUI/fonts/
 Added directory and 4 .ttf files for the font options
-
+ 
 ## Text
 Added font options to Text, TextBox, and TextDisplay objects.
 

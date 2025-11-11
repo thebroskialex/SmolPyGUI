@@ -13,7 +13,7 @@ You can install SmolPyGUI directly from PyPI:
 
 ```bash
 pip install smolpygui
-```
+``` 
 
 
 ## Examples

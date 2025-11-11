@@ -1,1 +1,1 @@
-recursive-include SmolPyGUI/fonts *
+recursive-include SmolPyGUI/fonts * 
