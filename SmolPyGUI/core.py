@@ -135,7 +135,7 @@ class DrawRect():
 
 class Text():
     def __init__(self, x:int, y:int, text:str, size:int=16, font:Literal['Courier','Courier Italic','Roboto','Roboto Italic']|str='courier', color:pygame.Color="#000000", scene:int|str=0):
-        if(font.lower() in ['Courier','Courier Italic','Roboto','Roboto Italic']):
+        if(font.lower() in ['courier','courier italic','roboto','roboto italic']):
             self.font = getFont(font, size)
         else:
             self.font = pygame.font.Font(font, size)
@@ -168,10 +168,10 @@ class TextBox():
         self.x = x
         self.y = y
         self.fontName = font
-        self.font = getFont(font,size)
+        self.font = getFont(font,size) if font.lower() in ['courier','courier italic','roboto','roboto italic'] else pygame.font.Font(font,size)
         self.charWid = self.font.size("M")[0]
         self.width = width
-        self.height = self.font.size("M")[1]
+        self.height = self.font.size("M")[1]+5
         self.size = size
         self.value = ""
         self.drawVal = ""
@@ -189,7 +189,7 @@ class TextBox():
         self.scene = scene
         self.button = Button(self.x, self.y, self.width, self.height, self.bg, lambda box=self:box.inputStart() if box.active else None, scene=scene)
         self.outBox = DrawRect(self.x, self.y, self.width, self.height, self.outline, 4, scene=scene)
-        self.text = Text(self.x+5,self.y,self.value,self.size,self.fontName,self.textColor, scene=scene)
+        self.text = Text(self.x+5,self.y+2,self.value,self.size,self.fontName,self.textColor, scene=scene)
         self.indic = DrawRect(self.x+10, self.y+5, 2, self.height-10, self.bg, 0, scene=scene)
         self.textboxinput = None
         if(not self.onHover == None):
@@ -210,12 +210,12 @@ class TextBox():
             self.value = self.value[:-1]
         else:
             self.value += e.unicode
-        if(len(self.value)*(self.charWid)>(self.width)):
-            self.drawVal = self.value[-int(self.width//(self.charWid)):]
+        if((10+len(self.value)*(self.charWid))>(self.width)):
+            self.drawVal = self.value[-int((self.width-10)//(self.charWid)):]
         else:
             self.drawVal = self.value
         self.text.text = self.drawVal
-        self.indic.x = (len(self.drawVal))*(self.charWid)
+        self.indic.x = self.x+((len(self.drawVal))*(self.charWid))+5
         self.onUpdate(self.value)
 
     def remove(self):
@@ -244,11 +244,12 @@ class TextDisplay():
         self.x = x
         self.y = y
         self.fontName = font
+        self.font = getFont(font, size) if font.lower() in ['courier','courier italic','roboto','roboto italic'] else pygame.font.Font(font,size)
         self.charWid = self.font.size("M")[0]
         self.width = width
         self.widthInChars = floor(width/self.charWid)
         self.charHgt = size*1.25
-        self.height = self.font.size("M")[1]*lines*2
+        self.height = self.font.size("M")[1]*lines
         self.lines = lines
         self.size = size
         self.drawVal = ""
@@ -608,4 +609,4 @@ def MainLoop():
     if(not globals.init):
         raise NotInitializedError("The initialize() function was not called before the MainLoop function.")
     while True:
-        TICK(['all']) 
+        TICK(['all'])

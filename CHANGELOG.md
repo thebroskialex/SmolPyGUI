@@ -1,4 +1,20 @@
-# 1.63
+# 1.64.1
+
+Bug fix patch 1.64.0. Fixes bugs that were present, some fatally bad.
+
+## Text
+Fixed bug where all font inputs would result in the program looking for a file with that name
+
+## Text Box
+Fixed bug where the typing indicator would start at x of 0 instead of the left of the text box
+
+Fixed bug where the text would overflow out of the text box at many font sizes
+
+---
+
+# 1.64
+
+A major update, 1.64! Adds some pretty cool features, listed below.
 
 ## SmolPyGUI/fonts/
 Added directory and 4 .ttf files for the font options
