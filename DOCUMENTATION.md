@@ -328,7 +328,3 @@ txt = smol.Text(100, 50, "Click the button!")
 # Run
 smol.MainLoop()
 ```
-
----
-
-End of Documentation.
