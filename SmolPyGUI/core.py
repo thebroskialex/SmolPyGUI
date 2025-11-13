@@ -8,7 +8,7 @@ Made with Pygame, many thanks to the Pygame team!
 
 
 import pygame
-from typing import Literal, Callable, NoReturn, Any
+from typing import Literal, Callable, NoReturn, Any, Hashable
 from time import time, time_ns, sleep
 from math import floor
 from importlib import resources
@@ -19,15 +19,37 @@ class NotInitializedError(Exception):
     def __init__(self, msg):
         super().__init__(msg)
 
-class Button():
+class EventObject():
+    def __init__(self,scene):
+        self.active = True
+        self.scene = scene
+    
+    def setActive(self,value:bool|Literal["toggle"]):
+        if(isinstance(value, (bool)) or value.lower()=="toggle"):
+            self.active = not self.active if value.lower()=="toggle" else value
+        else:
+            raise ValueError(f"Improper value for `value` argument: {value} ({type(value)})")
+
+class ScreenObject():
+    def __init__(self, x, y, scene):
+        self.x=x
+        self.y=y
+        self.scene=scene
+        self.visible=True
+    
+    def setVisible(self,value:bool|Literal["toggle"]):
+        if(isinstance(value, (bool)) or value.lower()=="toggle"):
+            self.visible = not self.visible if value.lower()=="toggle" else value
+        else:
+            raise ValueError(f"Improper value for `value` argument: {value} ({type(value)})")
+
+class Button(ScreenObject, EventObject):
     def __init__(self, x:int, y:int, width:int, height:int, texture:pygame.Color|pygame.surface.Surface, onClick:Callable, onHover:Callable=None, onUnHover:Callable=None, stroke:int=0, scene:int=0):
         """
         Basic constructor for Button objects, defines a rectangular button with width, height, x and y position, texture, a click function, and optionally a stroke value and a scene assignment.
         """
-        self.visible = True
-        self.active = True
-        self.x=x
-        self.y=y
+        ScreenObject.__init__(self,x,y,scene)
+        EventObject.__init__(self,scene)
         self.height=height
         self.width=width
         self.texture=texture
@@ -36,7 +58,6 @@ class Button():
         self.onUnHover = onUnHover
         self.hovered = False
         self.stroke = stroke
-        self.scene=scene
         events.buttons.append(self)
         if(not onHover == None):
             events.hovers.append(self)
@@ -56,7 +77,7 @@ class Button():
         else: return True
 
 class Scene():
-    def __init__(self, alias, backgroundColor):
+    def __init__(self, alias:Hashable, backgroundColor:pygame.color.Color):
         self.screen = pygame.surface.Surface((globals.width, globals.height))
         self.name = alias
         self.bg = backgroundColor
@@ -73,24 +94,32 @@ class Scene():
         else: return True
 
 class Sound():
-    def __init__(self, sndPath:str, alias:str|Literal["music"]):
+    def __init__(self, sndPath:str, alias:str|Literal["music","bgmusic"]|False):
         self.snd = globals.audioPlayer.Sound(sndPath)
         if(alias):
             self.name = alias
             audio.sounds.update({alias:self})
 
-class KeypressEvent():
+class KeypressEvent(EventObject):
     def __init__(self, keycode:int|Literal['all'], onKeyDown:Callable=None, onKeyHeld:Callable=None, onKeyUp:Callable=None, scene:int|str=0):
         self.key = keycode
         self.onDown = onKeyDown
         self.onHeld = onKeyHeld
         self.onUp = onKeyUp
-        self.scene=scene
-        self.active=True
+        EventObject.__init__(self,scene)
         if(isinstance(keycode,int)):
             events.keys.append(self)
         elif(keycode == "all"):
             events.keysAll.append(self)
+
+    def setOnDown(self,func:Callable|None):
+        self.onDown = func
+
+    def setOnUp(self, func:Callable|None):
+        self.onUp = func
+
+    def setOnHeld(self, func:Callable|None):
+        self.onHeld = func
 
     def remove(self):
         """
@@ -99,29 +128,50 @@ class KeypressEvent():
         """
         try:
             if(self.key == 'all'):
-                events.keysAll.append(self)
+                events.keysAll.remove(self)
             else:
                 events.keys.remove(self)
         except (KeyError, ValueError): return False
         else: return True
 
-class MouseEvent():
-    def __init__(self, mode:Literal["move","rightDown","rightUp","leftDown","leftUp","midDown","midUp","scrollUp","scrollDown"],onEvent:Callable,active:bool=True):
+class MouseEvent(EventObject):
+    def __init__(self, mode:Literal["move","rightDown","rightUp","leftDown","leftUp","midDown","midUp","scrollUp","scrollDown"],onEvent:Callable,scene:Hashable=0):
         self.onEvent = onEvent
-        self.active = active
+        EventObject.__init__(self,scene)
+        self.mode = mode
         events.mouse[mode].append(self)
+    
+    def remove(self):
+        try:
+            events.mouse[self.mode].remove(self)
+        except (KeyError, ValueError): return False
+        else: return True
 
-class DrawRect():
-    def __init__(self, x:int, y:int, width:int, height:int, texture:pygame.Color|pygame.surface.Surface, stroke:int=0,scene:int|str=0):
-        self.visible = True
-        self.x=x
-        self.y=y
+class DrawRect(ScreenObject,EventObject):
+    def __init__(self, x:int, y:int, width:int, height:int, texture:pygame.Color|pygame.surface.Surface, stroke:int=0,onClick:Callable=None,onHover:Callable=None,onUnHover:Callable=None,scene:int|str=0):
+        ScreenObject.__init__(self,x,y,scene)
+        EventObject.__init__(self,scene)
+        self.onClick = onClick
+        self.onHover = onHover
+        self.onUnHover = onUnHover
         self.height=height
         self.width=width
         self.texture=texture
         self.stroke=stroke
-        self.scene=scene
         draw.rects.append(self)
+        if(not self.onClick == None):
+            events.buttons.append(self)
+        if(not self.onHover == None or not self.onUnHover == None):
+            events.hovers.append(self)
+
+    def setOnClick(self,func:Callable|None):
+        self.onClick = func
+
+    def setOnHover(self, func:Callable|None):
+        self.onHover = func
+
+    def setOnUnHover(self, func:Callable|None):
+        self.onUnHover = func
 
     def remove(self):
         """
@@ -130,22 +180,23 @@ class DrawRect():
         """
         try:
             draw.rects.remove(self)
+            if(not self.onHover == None or not self.onUnHover == None):
+                events.hovers.remove(self)
+            if(not self.onClick == None):
+                events.buttons.remove(self)
         except (KeyError, ValueError): return False
         else: return True
 
-class Text():
+class Text(ScreenObject):
     def __init__(self, x:int, y:int, text:str, size:int=16, font:Literal['Courier','Courier Italic','Roboto','Roboto Italic']|str='courier', color:pygame.Color="#000000", scene:int|str=0):
         if(font.lower() in ['courier','courier italic','roboto','roboto italic']):
             self.font = getFont(font, size)
         else:
             self.font = pygame.font.Font(font, size)
-        self.visible=True
-        self.x=x
-        self.y=y
+        ScreenObject.__init__(self,x,y,scene)
         self.size=size
         self.text=text
         self.color=color
-        self.scene=scene
         draw.texts.append(self)
 
     def remove(self):
@@ -162,11 +213,11 @@ class TextBoxInputState():
     def __init__(self):
         self.active = False
 
-class TextBox():
+class TextBox(EventObject,ScreenObject):
     def __init__(self, x:int, y:int, width:int, size:int, font:Literal['Courier','Courier Italic','Roboto','Roboto Italic']='courier', bg="#ffffff", bgActive="#9999ff",outline="#444444", textColor="#000000", onUpdate:Callable[[str],Any]=lambda x: None, onReturn:Callable[[str],Any]=lambda x: None, onClick:Callable=lambda: None, onHover:Callable=None, onUnHover:Callable=None, scene:int|str=0):
         """Basic constructor for a TextBox object, the onUpdate and onReturn callback methods are supplied with the current TextBox text content when called."""
-        self.x = x
-        self.y = y
+        EventObject.__init__(self,scene)
+        ScreenObject.__init__(self,x,y,scene)
         self.fontName = font
         self.font = getFont(font,size) if font.lower() in ['courier','courier italic','roboto','roboto italic'] else pygame.font.Font(font,size)
         self.charWid = self.font.size("M")[0]
@@ -179,14 +230,12 @@ class TextBox():
         self.bgActive = bgActive
         self.outline = outline
         self.textColor = textColor
-        self.active = True
         self.onUpdate = onUpdate
         self.onInput = onReturn
         self.onClick = onClick
         self.onHover = onHover
         self.onUnHover = onUnHover
         self.hovered = False
-        self.scene = scene
         self.button = Button(self.x, self.y, self.width, self.height, self.bg, lambda box=self:box.inputStart() if box.active else None, scene=scene)
         self.outBox = DrawRect(self.x, self.y, self.width, self.height, self.outline, 4, scene=scene)
         self.text = Text(self.x+5,self.y+2,self.value,self.size,self.fontName,self.textColor, scene=scene)
@@ -194,6 +243,13 @@ class TextBox():
         self.textboxinput = None
         if(not self.onHover == None):
             events.hovers.append(self)
+
+    def setVisible(self, value):
+        self.button.setVisible(value)
+        self.outBox.setVisible(value)
+        self.text.setVisible(value)
+        self.indic.setVisible(value)
+        ScreenObject.setVisible(self,value)
 
     def inputStart(self):
         self.button.texture = self.bgActive
@@ -239,10 +295,10 @@ class TextDisplayTypeWriteState():
         self.nextTick = 0
         self.speed = 0
 
-class TextDisplay():
+class TextDisplay(EventObject,ScreenObject):
     def __init__(self, x:int, y:int, width:int, lines:int, size:int, font:Literal['Courier','Courier Italic','Roboto','Roboto Italic']='courier', value:str="", bg:pygame.Color|pygame.surface.Surface="#ffffff",outline:pygame.Color="#444444", textColor:pygame.Color="#000000",align:Literal["left","center"]="left",onClick:Callable=None,scene:int|str=0):
-        self.x = x
-        self.y = y
+        EventObject.__init__(self,scene)
+        ScreenObject.__init__(self,x,y,scene)
         self.fontName = font
         self.font = getFont(font, size) if font.lower() in ['courier','courier italic','roboto','roboto italic'] else pygame.font.Font(font,size)
         self.charWid = self.font.size("M")[0]
@@ -257,10 +313,8 @@ class TextDisplay():
         self.bg = bg
         self.outline = outline
         self.textColor = textColor
-        self.scene = scene
         self.typewriteState = TextDisplayTypeWriteState()
         self.onClick = onClick
-        self.active = True
         if(not self.onClick==None):
             events.buttons.append(self)
         self.box = DrawRect(self.x, self.y, self.width, self.height, self.bg, scene=scene) if bg else False
@@ -268,6 +322,11 @@ class TextDisplay():
         events.tickingObjects.append(self)
         self.text = []
         self.update(value, 'reset')
+
+    def setVisible(self, value):
+        self.box.setVisible(value)
+        self.outBox.setVisible(value)
+        ScreenObject.setVisible(self,value)
 
     @staticmethod
     def getCharsToLineEnd(wid,posS):
@@ -380,20 +439,52 @@ class audio:
 
     def playSound(snd:Sound|str):
         if(isinstance(snd, str)):
-            snd = Sound(str, False)
+            snd = Sound(str,snd)
         if(snd.name == "music" or snd.name == "bgMusic"):
             snd.snd.play(1)
             return
         snd.snd.play()
 
+    def stopSound(snd:Sound|str):
+        if(isinstance(snd, str)):
+            snd = audio.sounds.get(snd)
+        snd.snd.stop()
+
 class scenes:
     scenes:dict[str|int,Scene] = {0:globals.scene}
 
-    def switchScene(scene):
+    def switchScene(scene,fadeDur:float=0,hold:float=0):
         if(isinstance(scene, Scene)):
             scene = scene.name
+        fade = pygame.Surface((globals.width,globals.height),pygame.SRCALPHA)
+        fMax = fadeDur*globals.framerate
+        for fde in range(fMax):
+            alpha = int(255*fde/(fMax-1))
+            fade.fill((0,0,0,alpha))
+            draw.drawNoRender()
+            globals.screen.blit(fade, (0,0))
+            globals.renderer.blit(globals.screen,(0,0))
+            pygame.display.flip()
+            pygame.event.pump()
+            globals.clock.tick()
         globals.scene = scenes.scenes[scene]
         globals.screen = scenes.scenes[scene].screen
+        for __ in range(hold*globals.framerate):
+            globals.screen.blit(fade, (0,0))
+            globals.renderer.blit(globals.screen,(0,0))
+            pygame.display.flip()
+            pygame.event.pump()
+            globals.clock.tick()
+        for fde in range(fMax):
+            alpha = int(255*(1-fde/(fMax-1)))
+            fade.fill((0,0,0,alpha))
+            draw.drawNoRender()
+            globals.screen.blit(fade, (0,0))
+            globals.renderer.blit(globals.screen,(0,0))
+            pygame.display.flip()
+            pygame.event.pump
+            globals.clock.tick()
+
         
 
 class events:
@@ -419,7 +510,7 @@ class events:
         mouse = pygame.mouse.get_pos()
         for button in events.buttons:
             if button.x <= mouse[0] <= button.x+button.width and button.y <= mouse[1] <= button.y+button.height and globals.scene.name == button.scene and button.active:
-                button.onClick()
+                button.onClick() if not button.onClick == None else None
 
     @staticmethod
     def mouseEvents(event):
@@ -470,7 +561,8 @@ class events:
         mouse = pygame.mouse.get_pos()
         for button in events.hovers:
             if not button.hovered and (button.x <= mouse[0] <= button.x+button.width and button.y <= mouse[1] <= button.y+button.height) and globals.scene.name == button.scene and button.active:
-                button.onHover()
+                if(not button.onHover == None):
+                    button.onHover()
                 button.hovered = True
             elif button.hovered and not (button.x <= mouse[0] <= button.x+button.width and button.y <= mouse[1] <= button.y+button.height):
                 button.hovered = False
@@ -520,6 +612,12 @@ class draw:
         for tex in draw.texts:
             if(tex.visible and tex.scene == globals.scene.name):
                 globals.screen.blit(tex.font.render(tex.text, True, tex.color), (tex.x,tex.y))
+
+    @staticmethod
+    def drawNoRender():
+        globals.screen.fill(globals.scene.bg)
+        draw.drawRects()
+        draw.drawTexts()
 
     @staticmethod
     def drawAll():
