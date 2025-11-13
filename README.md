@@ -20,6 +20,10 @@ pip install smolpygui
 See example scripts [here](https://github.com/thebroskialex/SmolPyGUI/blob/main/examples)
 
 
+## Documentation
+Documentation can be found [here](https://github.com/thebroskialex/SmolPyGUI/blob/main/DOCUMENTATION.md)
+
+
 ## Screenshots
 ![Example Screenshot](https://github.com/thebroskialex/SmolPyGUI/blob/main/examples/images/example1.png?raw=true)
 ![Example Screenshot](https://github.com/thebroskialex/SmolPyGUI/blob/main/examples/images/example2.png?raw=true)
