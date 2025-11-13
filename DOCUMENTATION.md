@@ -1,115 +1,334 @@
-# SmolPyGUI Documentation:
+# SmolPyGUI Full Documentation
+
+SmolPyGUI is a lightweight and minimalistic GUI framework built on top of **Pygame**.  
+It provides intuitive tools for creating simple graphical interfaces in Python programs or games without the complexity of larger frameworks.
+
+This documentation explains every object, function, and system included in SmolPyGUI, how to use them, and how they interact.
+
+---
+
+## Getting Started
+
+### Initialization
+
+Before using any SmolPyGUI object, you must initialize the system with:
+
+```python
+smolpygui.initialize(size=(800, 600), framerate=60)
+```
+
+**Arguments:**
+- `size` — window resolution as `(width, height)`.
+- `framerate` — the refresh rate of your GUI (in ticks per second).
+- `screenFlags` — optional Pygame display flags.
+- `runtimeFuncs` — optional list of functions to run every frame.
+
+This sets up the main window, creates the default scene (`scene 0`), and prepares rendering.
+
+---
+
+### Main Loop
+
+Once everything is created, call:
+
+```python
+smolpygui.MainLoop()
+```
+
+This begins the GUI loop and continues running until the user closes the window.  
+Any updates, draws, or input events are handled automatically each tick.
+
+Alternatively, you can manually control updates using:
+
+```python
+smolpygui.TICK(['all'])
+```
+
+This runs one frame of updates. The list argument can contain:
+- `'draw'` — updates drawing.
+- `'input'` — processes mouse and keyboard input.
+- `'audio'` — updates audio.
+- `'object'` — updates object ticks.
+- `'user'` — runs your custom runtime functions.
+- `'all'` — runs all the above.
+
+---
+
+## Scenes
+
+### Scene
+
+Declaration:
+`Scene(alias, backgroundColor)`
+
+Creates a scene container for rendering and events. Scenes separate UI contexts, allowing screen transitions.
+
+**Arguments:**
+- `alias` | a unique name or number for the scene.
+- `backgroundColor` | background color, can be a hex string (`"#000000"`) or RGB tuple.
+
+**Functions:**
+- `.remove()` | Removes the scene from memory and scene registry.
+
+### Switching Scenes
+
+Use:
+```python
+scenes.switchScene(scene, fadeDur=0.5, hold=0.2)
+```
+- `scene` | the target Scene object or its alias.
+- `fadeDur` | duration of fade-in/out in seconds.
+- `hold` | time to hold the black screen before fade-in.
+
+The fade effect blocks all input while active.
+
+---
 
 ## Objects
 
 ### Button
 
 Declaration: 
-`Button(x,y,width,height,texture,onClick,onHover=None,onUnHover=None,stroke=0,scene=0)`
+`Button(x, y, width, height, texture, onClick, onHover=None, onUnHover=None, stroke=0, scene=0)`
 
-- x | x position (of top left corner) [REQUIRED]
-- y | y position (of top left corner) [REQUIRED]
-- width | width of the button [REQUIRED]
-- height | height of the button [REQUIRED]
-- texture | looks of the button, could be color value (ie. `"#ff0000"`, `(255,0,0)`) or `pygame.surface.Surface` object. [REQUIRED]
-- onClick | Callback function that activates when button is clicked [REQUIRED]
-- onHover | Callback function that activates when the mouse hovers over the button [OPTIONAL]
-- onUhHover | Callback function that activates when the mouse stops hovering over the button [OPTIONAL]
-- stroke | the stroke width of the button object, 0 being filled [OPTIONAL - DEFAULTS TO `0`]
-- scene | The scene the button is drawn and handled in [OPTIONAL - DEFAULTS TO `0`]
+- `x` | x position of the top-left corner [REQUIRED]  
+- `y` | y position of the top-left corner [REQUIRED]  
+- `width` | button width [REQUIRED]  
+- `height` | button height [REQUIRED]  
+- `texture` | color (e.g. `"#ff0000"`) or `pygame.Surface` object [REQUIRED]  
+- `onClick` | callback executed when clicked [REQUIRED]  
+- `onHover` | callback when the mouse hovers [OPTIONAL]  
+- `onUnHover` | callback when the mouse leaves hover [OPTIONAL]  
+- `stroke` | border thickness (0 = filled) [OPTIONAL]  
+- `scene` | scene alias [OPTIONAL]  
 
-Functions:
-- .remove() | Removes the object from drawing and event loops.
+**Functions:**
+- `.remove()` — removes the object from the event and draw lists.
+
+---
 
 ### DrawRect
 
-Declaration:
-`DrawRect(x,y,width,height,texture,stroke,onClick=None,onHover=None,onUnHover=None,scene=0)`
+Declaration:  
+`DrawRect(x, y, width, height, texture, stroke=0, onClick=None, onHover=None, onUnHover=None, scene=0)`
 
-- x | x position (of top left corner) [REQUIRED]
-- y | y position (of top left corner) [REQUIRED]
-- width | width of the button [REQUIRED]
-- height | height of the button [REQUIRED]
-- texture | looks of the button, could be color value (ie. `"#ff0000"`, `(255,0,0)`) or `pygame.surface.Surface` object. [REQUIRED]
-- stroke | the stroke width of the button object, 0 being filled [OPTIONAL - DEFAULTS TO `0`]
-- onClick | Callback function that activates when button is clicked [OPTIONAL]
-- onHover | Callback function that activates when the mouse hovers over the button [OPTIONAL]
-- onUhHover | Callback function that activates when the mouse stops hovering over the button [OPTIONAL]
-- scene | The scene the button is drawn and handled in [OPTIONAL - DEFAULTS TO `0`]
+Same arguments as `Button`, but this object is more general-purpose (can be static or interactive).
 
-Functions:
+**Functions:**
+- `.setOnClick(func)` — sets a click callback.
+- `.setOnHover(func)` — sets a hover callback.
+- `.setOnUnHover(func)` — sets an un-hover callback.
+- `.remove()` — removes the rectangle from rendering and events.
 
-- [ScreenObject Functions](#screenobject)
-- [EventObject Functions](#eventobject)
-- .setOnClick(func:Callable|None) | Sets the onClick callback function to the given value
-- .setOnHover(func:Callable|None) | Sets the onHover callback function to the given value
-- .setOnUnHover(func:Callable|None) | Sets the onUnHover callback function to the given value
-
-### KeypressEvent
-
-Declaration:
-`KeypressEvent(keycode,onKeyDown=None,onKeyUp=None,onKeyHeld=None,scene=0)`
-
-- keycode | The pygame keycode that triggers the event, or `'all'` for all keys [REQUIRED]
-- onKeyDown | the callback function that runs when the keycode is pressed down [OPTIONAL]
-- onKeyUp | the callback function that runs when the keycode is released [OPTIONAL]
-- onKeyHeld | the callback function that runs every tick the keycode is held down [OPTIONAL]
-
-Attributes:
-
-- [EventObject Attributes](#eventobject)
-
-Functions:
-
-- [EventObject Functions](#eventobject)
-- .remove() | removes the KeypressEvent from activating permanently
+---
 
 ### Text
 
-Declaration:
-`Text(x,y,text,size=16,font='courier')`
+Declaration:  
+`Text(x, y, text, size=16, font='courier', color="#000000", scene=0)`
 
-- x | x position (of top left corner) [REQUIRED]
-- y | y position (of top left corner) [REQUIRED]
-- text | string value of the text [REQUIRED]
-- size | font size of the drawn text [OPTIONAL - DEFAULTS TO `16`]
-- font | font name (see [fonts](#font-name-options)) or font file path of the drawn text [OPTIONAL - DEFAULTS TO `'courier'`]
+Displays text at the given position.
+
+**Arguments:**
+- `x`, `y` — top-left corner coordinates.  
+- `text` — string content.  
+- `size` — font size.  
+- `font` — one of `'Courier'`, `'Courier Italic'`, `'Roboto'`, `'Roboto Italic'`, or a path to a font file.  
+- `color` — text color.  
+- `scene` — scene alias.
+
+**Functions:**
+- `.remove()` — removes the text from rendering.
+
+---
 
 ### TextBox
+
+Declaration:  
+`TextBox(x, y, width, size, font='courier', bg="#ffffff", bgActive="#9999ff", outline="#444444", textColor="#000000", onUpdate=lambda x: None, onReturn=lambda x: None, onClick=lambda: None, onHover=None, onUnHover=None, scene=0)`
+
+A text input box that accepts keyboard input.
+
+**Arguments:**
+- `x`, `y`, `width` — position and width.  
+- `size` — font size.  
+- `font` — built-in or custom font.  
+- `bg` — inactive background color.  
+- `bgActive` — active background color.  
+- `outline` — border color.  
+- `textColor` — color of entered text.  
+- `onUpdate(text)` — called every time text updates.  
+- `onReturn(text)` — called when the Return key is pressed.  
+- `onClick()` — called when the box is clicked.  
+- `onHover()`, `onUnHover()` — optional hover events.  
+- `scene` — scene alias.
+
+**Functions:**
+- `.setVisible(value)` — shows/hides the text box.  
+- `.remove()` — removes all internal elements (text, outline, etc.).
+
+---
+
+### TextDisplay
+
+Declaration:  
+`TextDisplay(x, y, width, lines, size, font='courier', value="", bg="#ffffff", outline="#444444", textColor="#000000", align='left', onClick=None, scene=0)`
+
+Displays multiline text with optional typing animation.
+
+**Functions:**
+- `.update(text, mode='reset')` — sets text. `mode` can be `'reset'`, `'append'`, or `'prepend'`.  
+- `.typeWrite(text, chars=2, speed=25, mode='reset')` — animates text appearing.  
+- `.setVisible(value)` — toggles visibility.  
+- `.remove()` — removes the display and its children.
+
+---
 
 ## Base Object Classes
 
 ### ScreenObject
 
-Attributes:
+Common properties for all visual elements.
 
-- .x | x position of the top left corner of the object
-- .y | y position of the top left corner of the object
-- .visible | Boolean that determines whether something is visible on screen [Direct Interfacing Not Recomended]
-- .scene | scene in which the object is rendered [Direct Interfacing Not Recomended]
+**Attributes:**
+- `.x` — x coordinate.  
+- `.y` — y coordinate.  
+- `.visible` — visibility flag.  
+- `.scene` — the scene name or index.  
 
-
-Functions:
-
-- .setVisible(value:bool|'toggle') | Sets the visibility of an object (and, in the case of TextBox and TextDisplay, all child objects).
+**Functions:**
+- `.setVisible(value)` — sets visibility or toggles when `'toggle'` is passed.
 
 ### EventObject
 
-Attributes:
+Base for all event-reactive elements.
 
-- .active | whether or not the event is handled [Direct Interfacing Not Recomended]
-- .scene | what scene the event is handled in [Direct Interfacing Not Recomended]
+**Attributes:**
+- `.active` — whether the event is processed.  
+- `.scene` — which scene handles it.  
 
-Functions:
+**Functions:**
+- `.setActive(value)` — toggles or sets active state.
 
-- .setActive(value:bool|'toggle') | Sets the active value of the event to the given boolean or toggles it.
+---
 
-## Other
+## Event Handling
 
-### Font Name Options
-There are four built-in fonts in SmolPyGUI, their names are as follows.
+### KeypressEvent
 
+Declaration:  
+`KeypressEvent(keycode, onKeyDown=None, onKeyUp=None, onKeyHeld=None, scene=0)`
+
+Listens for key events.
+
+**Arguments:**
+- `keycode` — Pygame key constant or `'all'`.  
+- `onKeyDown()` — callback on press.  
+- `onKeyUp()` — callback on release.  
+- `onKeyHeld()` — callback called every tick while held.
+
+**Functions:**
+- `.setOnDown(func)`  
+- `.setOnUp(func)`  
+- `.setOnHeld(func)`  
+- `.remove()`
+
+### MouseEvent
+
+Declaration:  
+`MouseEvent(mode, onEvent, scene=0)`
+
+**Modes:** `'move'`, `'leftDown'`, `'leftUp'`, `'rightDown'`, `'rightUp'`, `'midDown'`, `'midUp'`, `'scrollUp'`, `'scrollDown'`.
+
+**Functions:**
+- `.remove()` — unregisters the event.
+
+---
+
+## Audio
+
+### Sound
+
+Declaration:  
+`Sound(path, alias)`
+
+Loads a sound or background music.
+
+**Arguments:**
+- `path` — file path to the sound file.  
+- `alias` — identifier string or `"music"` / `"bgmusic"` for continuous playback.
+
+### audio Module
+
+**Functions:**
+- `audio.playSound(sound_or_alias)` — plays a sound.  
+- `audio.stopSound(sound_or_alias)` — stops playback.
+
+---
+
+## Globals
+
+The `globals` module stores current engine state.
+
+**Attributes:**
+- `.renderer` — main Pygame display surface.  
+- `.screen` — active scene surface.  
+- `.scene` — current active Scene.  
+- `.width`, `.height` — window size.  
+- `.framerate` — target tick rate.  
+- `.runtimeFuncs` — list of user functions executed each tick.  
+
+---
+
+## Drawing System
+
+The `draw` module manages rendering.
+
+**Functions:**
+- `draw.drawRects()` — renders all rectangles and buttons.  
+- `draw.drawTexts()` — renders all text elements.  
+- `draw.drawAll()` — clears screen, draws everything, and updates display.  
+- `draw.drawNoRender()` — same as `drawAll()` but does not flip the display buffer.
+
+---
+
+## Utility Functions
+
+### getFont
+
+Declaration:  
+`getFont(name, size)`
+
+Returns a Pygame `Font` object from one of SmolPyGUI’s built-in font names.
+
+**Built-in options:**
 - Courier
 - Courier Italic
 - Roboto
 - Roboto Italic
+
+---
+
+## Example Usage
+
+```python
+import SmolPyGUI as smol
+
+def say_hello():
+    print("Hello, world!")
+
+smol.initialize((640, 480), framerate=60)
+
+# Create a button
+btn = smol.Button(100, 100, 150, 50, "#22cc88", say_hello)
+
+# Add text
+txt = smol.Text(100, 50, "Click the button!")
+
+# Run
+smol.MainLoop()
+```
+
+---
+
+End of Documentation.
