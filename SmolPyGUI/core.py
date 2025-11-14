@@ -63,14 +63,14 @@ class Button(ScreenObject, EventObject):
             events.hovers.append(self)
         draw.rects.append(self)
 
-    def setOnDown(self,func:Callable|None):
-        self.onDown = func
+    def setOnClick(self,func:Callable|None):
+        self.onClick = func
 
-    def setOnUp(self, func:Callable|None):
-        self.onUp = func
+    def setOnHover(self, func:Callable|None):
+        self.onHover = func
 
-    def setOnHeld(self, func:Callable|None):
-        self.onHeld = func
+    def setOnUnHover(self, func:Callable|None):
+        self.onUnHover = func
 
     def remove(self):
         """

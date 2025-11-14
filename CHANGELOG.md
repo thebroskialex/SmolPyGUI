@@ -3,18 +3,21 @@
 Minor update 1.64.2, adds some QoL features.
 
 ## ScreenObject
-Added ScreenObject base class that all drawn objects inherit from. <sup>[1](https://www.github.com/thebroskialex/SmolPyGUI/blob/main/DOCUMENTATION.md#screenobject)</sup>
+Added ScreenObject base class that all drawn objects inherit from. <sup>[\[1\]](https://www.github.com/thebroskialex/SmolPyGUI/blob/main/DOCUMENTATION.md#screenobject)</sup>
 
-Added .setVisible() function to all ScreenObject inherited classes, allowing for easier changing of visibility. [1](https://www.github.com/thebroskialex/SmolPyGUI/blob/main/DOCUMENTATION.md#screenobject)
+Added .setVisible() function to all ScreenObject inherited classes, allowing for easier changing of visibility. <sup>[\[1\]](https://www.github.com/thebroskialex/SmolPyGUI/blob/main/DOCUMENTATION.md#screenobject)</sup>
 
 ## EventObject
-Added EventObject base class that all event callers inherit from. [2](https://www.github.com/thebroskialex/SmolPyGUI/blob/main/DOCUMENTATION.md#eventobject)
+Added EventObject base class that all event callers inherit from. <sup>[\[2\]](https://www.github.com/thebroskialex/SmolPyGUI/blob/main/DOCUMENTATION.md#eventobject)</sup>
 
 ## DrawRect
-Added functions to DrawRect declaration [3](https://www.github.com/thebroskialex/SmolPyGUI/blob/main/DOCUMENTATION.md#drawrect)
+Added functions to DrawRect declaration <sup>[\[3\]](https://www.github.com/thebroskialex/SmolPyGUI/blob/main/DOCUMENTATION.md#drawrect)</sup>
 
 ## Scenes
-Added optional fade out/in for scene transition [4](https://www.github.com/thebroskialex/SmolPyGUI/blob/main/DOCUMENTATION.md#scene)
+Added optional fade out/in for scene transition <sup>[\[4\]](https://www.github.com/thebroskialex/SmolPyGUI/blob/main/DOCUMENTATION.md#scene)</sup>
+
+## Utility Functions
+Added draw.drawNoRender() function which draws everything onto global.screen without blitting it onto the rendered window. <sup>[\[5\]](https://www.github.com/thebroskialex/SmolPyGUI/blob/main/DOCUMENTATION.md#drawing-system)
 
 ## Bug fixes
 Fixed bug where, when using the KeypressEvent.remove() method, the KeypressEvent would duplicate itself
