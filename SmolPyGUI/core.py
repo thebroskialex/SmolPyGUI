@@ -63,6 +63,15 @@ class Button(ScreenObject, EventObject):
             events.hovers.append(self)
         draw.rects.append(self)
 
+    def setOnDown(self,func:Callable|None):
+        self.onDown = func
+
+    def setOnUp(self, func:Callable|None):
+        self.onUp = func
+
+    def setOnHeld(self, func:Callable|None):
+        self.onHeld = func
+
     def remove(self):
         """
         Basic removal function, removes the object from execution order
@@ -244,7 +253,7 @@ class TextBox(EventObject,ScreenObject):
         if(not self.onHover == None):
             events.hovers.append(self)
 
-    def setVisible(self, value):
+    def setVisible(self, value:bool|Literal['toggle']='toggle'):
         self.button.setVisible(value)
         self.outBox.setVisible(value)
         self.text.setVisible(value)
