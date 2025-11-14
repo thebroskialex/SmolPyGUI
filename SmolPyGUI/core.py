@@ -9,7 +9,6 @@ Made with Pygame, many thanks to the Pygame team!
 
 import pygame
 from typing import Literal, Callable, NoReturn, Any, Hashable
-from time import time, time_ns, sleep
 from math import floor
 from importlib import resources
 pygame.init()

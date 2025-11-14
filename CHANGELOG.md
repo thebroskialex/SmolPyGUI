@@ -1,3 +1,9 @@
+# 1.64.2.post1
+
+Tiny TINY update, just fixed some naming issues in the Button class and removed some unused imports.
+
+---
+
 # 1.64.2
 
 Minor update 1.64.2, adds some QoL features.
@@ -22,7 +28,7 @@ Added draw.drawNoRender() function which draws everything onto global.screen wit
 ## Bug fixes
 Fixed bug where, when using the KeypressEvent.remove() method, the KeypressEvent would duplicate itself
 
-
+---
 
 # 1.64.1
 
