@@ -178,7 +178,7 @@ A text input box that accepts keyboard input.
 
 **Functions:**
 - `.setVisible(value)` — shows/hides the text box. 
-- - `value` — A boolean value to set the visibility to or the string "toggle" to toggle it ⎊='toggle'
+  - `value` — A boolean value to set the visibility to or the string "toggle" to toggle it ⎊='toggle'
 - `.remove()` — removes all internal elements (text, outline, etc.).
 
 ---
