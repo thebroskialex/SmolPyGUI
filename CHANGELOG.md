@@ -1,3 +1,26 @@
+# 1.64.2
+
+Minor update 1.64.2, adds some QoL features.
+
+## ScreenObject
+Added ScreenObject base class that all drawn objects inherit from. <sup>[1](https://www.github.com/thebroskialex/SmolPyGUI/blob/main/DOCUMENTATION.md#screenobject)</sup>
+
+Added .setVisible() function to all ScreenObject inherited classes, allowing for easier changing of visibility. [1](https://www.github.com/thebroskialex/SmolPyGUI/blob/main/DOCUMENTATION.md#screenobject)
+
+## EventObject
+Added EventObject base class that all event callers inherit from. [2](https://www.github.com/thebroskialex/SmolPyGUI/blob/main/DOCUMENTATION.md#eventobject)
+
+## DrawRect
+Added functions to DrawRect declaration [3](https://www.github.com/thebroskialex/SmolPyGUI/blob/main/DOCUMENTATION.md#drawrect)
+
+## Scenes
+Added optional fade out/in for scene transition [4](https://www.github.com/thebroskialex/SmolPyGUI/blob/main/DOCUMENTATION.md#scene)
+
+## Bug fixes
+Fixed bug where, when using the KeypressEvent.remove() method, the KeypressEvent would duplicate itself
+
+
+
 # 1.64.1
 
 Bug fix patch 1.64.0. Fixes bugs that were present, some fatally bad.
