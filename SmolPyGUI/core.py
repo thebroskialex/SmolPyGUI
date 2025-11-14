@@ -24,7 +24,7 @@ class EventObject():
         self.active = True
         self.scene = scene
     
-    def setActive(self,value:bool|Literal["toggle"]):
+    def setActive(self,value:bool|Literal["toggle"]='toggle'):
         if(isinstance(value, (bool)) or value.lower()=="toggle"):
             self.active = not self.active if value.lower()=="toggle" else value
         else:
@@ -37,7 +37,7 @@ class ScreenObject():
         self.scene=scene
         self.visible=True
     
-    def setVisible(self,value:bool|Literal["toggle"]):
+    def setVisible(self,value:bool|Literal["toggle"]='toggle'):
         if(isinstance(value, (bool)) or value.lower()=="toggle"):
             self.visible = not self.visible if value.lower()=="toggle" else value
         else:
@@ -332,7 +332,7 @@ class TextDisplay(EventObject,ScreenObject):
         self.text = []
         self.update(value, 'reset')
 
-    def setVisible(self, value):
+    def setVisible(self, value:bool|Literal["toggle"]="toggle"):
         self.box.setVisible(value)
         self.outBox.setVisible(value)
         ScreenObject.setVisible(self,value)

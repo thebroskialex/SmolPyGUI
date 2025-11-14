@@ -107,11 +107,11 @@ Declaration:
 
 **Functions:**
 - `.setOnClick(func)` — sets a click callback.
-- - `func` — callback executed when clicked, or None
+  - `func` — callback executed when clicked, or None
 - `.setOnHover(func)` — sets a hover callback.
-- - `func` — callback executed when hovered over, or None
+  - `func` — callback executed when hovered over, or None
 - `.setOnUnHover(func)` — sets an unhover callback.
-- - `func` — callback executed when unhovered, or None
+  - `func` — callback executed when unhovered, or None
 - `.remove()` — removes the object from the event and draw lists.
 
 ---
@@ -126,11 +126,11 @@ Same arguments as `Button`, but this object is more general-purpose (can be stat
 
 **Functions:**
 - `.setOnClick(func)` — sets a click callback.
-- - `func` — callback executed when clicked, or None
+  - `func` — callback executed when clicked, or None
 - `.setOnHover(func)` — sets a hover callback.
-- - `func` — callback executed when hovered over, or None
+  - `func` — callback executed when hovered over, or None
 - `.setOnUnHover(func)` — sets an unhover callback.
-- - `func` — callback executed when unhovered, or None
+  - `func` — callback executed when unhovered, or None
 - `.remove()` — removes the rectangle from rendering and events.
 
 ---
@@ -191,9 +191,16 @@ Declaration:
 Displays multiline text with optional typing animation.
 
 **Functions:**
-- `.update(text, mode='reset')` — sets text. `mode` can be `'reset'`, `'append'`, or `'prepend'`. 
+- `.update(text, mode='reset')` — sets text.
+  - `text` — the string that is appended, prepended, or replaces the previous string
+  - `mode` — can be one of three values, `'reset'`, `'append'`, or `'prepend'`. ⎊='reset'
 - `.typeWrite(text, chars=2, speed=25, mode='reset')` — animates text appearing. 
+  - `text` — the string that is appended, prepended, or replaces the previous string
+  - `chars` — the amount of characters added per animation tick ⎊=2
+  - `speed` — the amound of ticks between animation ticks ⎊=25
+  - `mode` — can be one of three values, `'reset'`, `'append`, or `'prepend'`. ⎊='reset' 
 - `.setVisible(value)` — toggles visibility. 
+  - `value` — 
 - `.remove()` — removes the display and its children.
 
 ---
@@ -212,6 +219,7 @@ Common properties for all visual elements.
 
 **Functions:**
 - `.setVisible(value)` — sets visibility or toggles when `'toggle'` is passed.
+  - value — boolean to set visibility to or 'toggle' ⎊='toggle'
 
 ### EventObject
 
@@ -223,6 +231,7 @@ Base for all event-reactive elements.
 
 **Functions:**
 - `.setActive(value)` — toggles or sets active state.
+  - `value` — boolean to set active to or 'toggle' ⎊='toggle'
 
 ---
 
@@ -240,11 +249,15 @@ Listens for key events.
 - `onKeyDown()` — callback on press. 
 - `onKeyUp()` — callback on release. 
 - `onKeyHeld()` — callback called every tick while held.
+- `scene` — 
 
 **Functions:**
-- `.setOnDown(func)`  
-- `.setOnUp(func)`  
-- `.setOnHeld(func)`  
+- `.setOnDown(func)`
+  - `func` — callback to happend when key is pressed, or None
+- `.setOnUp(func)`
+  - `func` — callback to happend when key is pressed, or None
+- `.setOnHeld(func)`
+  - `func` — callback to happend when key is pressed, or None
 - `.remove()`
 
 ### MouseEvent
@@ -253,6 +266,11 @@ Declaration:
 `MouseEvent(mode, onEvent, scene=0)`
 
 **Modes:** `'move'`, `'leftDown'`, `'leftUp'`, `'rightDown'`, `'rightUp'`, `'midDown'`, `'midUp'`, `'scrollUp'`, `'scrollDown'`.
+
+**Arguments:**
+- `mode` — any of the MouseEvent modes
+- `onEvent` — callback to run when the event occurs (leftDown and rightDown are supplied with one argument by default)
+- `scene` — scene where this MouseEvent is active ⎊=0
 
 **Functions:**
 - `.remove()` — unregisters the event.
@@ -314,6 +332,10 @@ Declaration:
 `getFont(name, size)`
 
 Returns a Pygame `Font` object from one of SmolPyGUI’s built-in font names.
+
+**Arguments:**
+- `name` — The name of the font to load, either from the built-in options or as the path of a font on the system
+- `size` — Integer value for font size
 
 **Built-in options:**
 - Courier
